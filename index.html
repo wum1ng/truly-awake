@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Truly Awake — stays awake even in the background</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0A0D16;
+    --bg-1:#151b30;
+    --ink:#ECE9E1;
+    --muted:#79839B;
+    --amber:#F6B44C;
+    --amber-soft:#FFD98A;
+    --off:#2E3650;
+    --line:rgba(255,255,255,0.08);
+    --danger:#E8956B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(circle at 50% 38%, var(--bg-1) 0%, var(--bg-0) 62%);
+    color:var(--ink);
+    font-family:"Space Mono",ui-monospace,monospace;
+    min-height:100%;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:clamp(20px,6vh,64px) 20px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .card{width:100%;max-width:460px;text-align:center}
+  .eyebrow{
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);
+  }
+  .lamp-wrap{height:190px;display:flex;align-items:center;justify-content:center;margin:24px 0 8px}
+  .lamp{
+    width:104px;height:104px;border-radius:50%;
+    background:radial-gradient(circle at 42% 38%, var(--off), #1b2138 70%);
+    box-shadow:0 0 0 1px var(--line) inset;
+    transition:background .8s ease, box-shadow .8s ease;
+  }
+  body.awake .lamp{
+    background:radial-gradient(circle at 42% 38%, var(--amber-soft), var(--amber) 55%, #b97e28 100%);
+    box-shadow:0 0 0 1px rgba(255,220,150,.4) inset,0 0 40px 6px rgba(246,180,76,.45),0 0 110px 24px rgba(246,180,76,.20);
+    animation:breathe 4.6s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.045);filter:brightness(1.14)}}
+  .status{
+    font-family:"Fraunces",Georgia,serif;font-weight:600;
+    font-size:clamp(46px,13vw,68px);line-height:1;letter-spacing:-.01em;margin-bottom:14px;
+  }
+  .readout{font-size:13px;color:var(--muted);min-height:20px;letter-spacing:.04em}
+  .readout b{color:var(--ink);font-weight:700}
+  .btn{
+    margin-top:28px;font-family:"Space Mono",monospace;font-size:15px;letter-spacing:.05em;
+    color:var(--bg-0);background:var(--amber);border:none;border-radius:2px;padding:16px 30px;cursor:pointer;
+    transition:transform .12s ease, background .3s ease, opacity .3s ease;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn:focus-visible{outline:2px solid var(--amber-soft);outline-offset:3px}
+  body.awake .btn{background:transparent;color:var(--muted);box-shadow:0 0 0 1px var(--line) inset}
+  body.awake .btn:hover{color:var(--ink)}
+  /* tone control */
+  .tone{
+    margin-top:24px;display:flex;align-items:center;justify-content:center;gap:12px;
+    opacity:0;pointer-events:none;transition:opacity .4s ease;
+  }
+  body.awake .tone{opacity:1;pointer-events:auto}
+  .tone label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:140px;height:2px;background:var(--off);border-radius:2px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border:none;border-radius:50%;background:var(--amber);cursor:pointer}
+  input[type=range]:focus-visible{outline:2px solid var(--amber-soft);outline-offset:6px}
+  .note{margin-top:30px;font-size:12px;line-height:1.7;color:var(--muted);letter-spacing:.02em}
+  .fallback{
+    margin-top:24px;padding:18px 20px;text-align:left;border:1px solid var(--line);border-radius:4px;
+    font-size:12.5px;line-height:1.75;color:var(--muted);display:none;
+  }
+  .fallback.show{display:block}
+  .fallback strong{color:var(--danger);font-weight:700;display:block;margin-bottom:6px;letter-spacing:.04em}
+  .fallback .em{color:var(--ink)}
+  .foot{margin-top:36px;padding-top:22px;border-top:1px solid var(--line)}
+  .kofi{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.06em;color:var(--muted);text-decoration:none;
+    padding:8px 14px;border-radius:2px;box-shadow:0 0 0 1px var(--line) inset;
+    transition:color .25s ease, box-shadow .25s ease;
+  }
+  .kofi:hover{color:var(--amber-soft);box-shadow:0 0 0 1px rgba(246,180,76,.4) inset}
+  .kofi:focus-visible{outline:2px solid var(--amber-soft);outline-offset:3px}
+  .kofi svg{flex:none;opacity:.85}
+  @media (prefers-reduced-motion:reduce){body.awake .lamp{animation:none}.btn{transition:none}}
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">Truly Awake · even in the background</div>
+
+    <div class="lamp-wrap"><div class="lamp" id="lamp"></div></div>
+
+    <h1 class="status" id="status">Asleep</h1>
+    <div class="readout" id="readout">Not holding the machine awake.</div>
+
+    <button class="btn" id="toggle">Keep this awake</button>
+
+    <div class="tone">
+      <label for="vol">Tone</label>
+      <input type="range" id="vol" min="0" max="100" value="14" aria-label="Keep-awake tone volume">
+    </div>
+
+    <p class="note" id="note">
+      Works in the background — switch tabs or minimize freely. A faint locally-generated
+      tone holds the system awake using no network. Raise the tone to confirm it's live.
+      This stops the machine sleeping; the screen may still dim, and it won't change your chat-app status.
+    </p>
+
+    <div class="fallback" id="fallback">
+      <strong>Audio couldn't start here</strong>
+      Some embedded frames block it. The always-works version with no install:
+      open a long video or radio stream on <span class="em">YouTube</span>, keep it playing
+      (audio is enough — no need to watch), and it'll hold the machine awake.
+    </div>
+
+    <footer class="foot">
+      <a class="kofi" href="https://ko-fi.com/scyong" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M4 4h13a4 4 0 0 1 0 8h-1.1A6 6 0 0 1 10 16H8a6 6 0 0 1-6-6V4h2Zm13 6a2 2 0 0 0 0-4h-.1v4H17ZM3 19h16v2H3z"/>
+        </svg>
+        <span>Support SC Yong on Ko-fi</span>
+      </a>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  const body=document.body;
+  const statusEl=document.getElementById('status');
+  const readout=document.getElementById('readout');
+  const btn=document.getElementById('toggle');
+  const fallback=document.getElementById('fallback');
+  const note=document.getElementById('note');
+  const vol=document.getElementById('vol');
+
+  let awake=false, startTime=null, ticker=null;
+  let wakeLock=null;
+  let audioCtx=null, osc=null, gain=null;
+
+  const MAX_GAIN=0.05; // very quiet ceiling
+  function gainFromSlider(){ return (parseInt(vol.value,10)/100)*MAX_GAIN; }
+
+  function fmt(ms){
+    const s=Math.floor(ms/1000);
+    const p=n=>String(n).padStart(2,'0');
+    return p(Math.floor(s/3600))+':'+p(Math.floor((s%3600)/60))+':'+p(s%60);
+  }
+  function tick(){ if(awake&&startTime) readout.innerHTML='Awake for <b>'+fmt(Date.now()-startTime)+'</b>'; }
+
+  // --- audio: the part that survives a hidden tab ---
+  function startAudio(){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return false;
+    if(!audioCtx){
+      audioCtx=new AC();
+      osc=audioCtx.createOscillator();
+      gain=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.value=120;
+      gain.gain.value=gainFromSlider();
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+    }
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    return true;
+  }
+  function stopAudio(){ if(audioCtx&&audioCtx.state==='running') audioCtx.suspend(); }
+  vol.addEventListener('input',function(){ if(gain) gain.gain.value=gainFromSlider(); });
+
+  // --- wake lock: bonus, keeps the DISPLAY on while the tab is visible ---
+  async function acquireLock(){
+    if(!('wakeLock'in navigator)) return;
+    try{
+      wakeLock=await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release',()=>{wakeLock=null;});
+    }catch(e){ wakeLock=null; }
+  }
+  document.addEventListener('visibilitychange',function(){
+    if(awake&&!wakeLock&&document.visibilityState==='visible') acquireLock();
+  });
+
+  function showBlocked(){
+    awake=false; body.classList.remove('awake');
+    statusEl.textContent='Blocked'; readout.textContent='';
+    btn.style.display='none'; note.style.display='none';
+    fallback.classList.add('show');
+  }
+
+  async function turnOn(){
+    const ok=startAudio();
+    if(!ok){ showBlocked(); return; }
+    acquireLock(); // best-effort, no await
+    awake=true; startTime=Date.now();
+    body.classList.add('awake');
+    statusEl.textContent='Awake';
+    btn.textContent='Let it sleep';
+    tick(); ticker=setInterval(tick,1000);
+  }
+  async function turnOff(){
+    awake=false; clearInterval(ticker);
+    stopAudio();
+    if(wakeLock){ try{await wakeLock.release();}catch(e){} wakeLock=null; }
+    body.classList.remove('awake');
+    statusEl.textContent='Asleep';
+    btn.textContent='Keep this awake';
+    readout.textContent='Not holding the machine awake.';
+  }
+
+  btn.addEventListener('click',function(){ awake?turnOff():turnOn(); });
+})();
+</script>
+</body>
+</html>
